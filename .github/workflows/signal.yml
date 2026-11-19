@@ -1,0 +1,32 @@
+name: Sinyal XAUUSD
+
+on:
+  schedule:
+    - cron: "*/10 * * * 1-5"   # tiap 10 menit, Senin-Jumat (UTC)
+  workflow_dispatch:            # tombol "Run workflow" untuk tes manual
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Simpan state.json antar run supaya tidak kirim sinyal dobel
+      - uses: actions/cache@v4
+        with:
+          path: state.json
+          key: state-${{ github.run_id }}
+          restore-keys: state-
+
+      - run: pip install -r requirements.txt
+
+      - run: python main.py
+        env:
+          TWELVE_DATA_KEY: ${{ secrets.TWELVE_DATA_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GROQ_KEY: ${{ secrets.GROQ_KEY }}
